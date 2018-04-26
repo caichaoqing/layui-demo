@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>layui</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<link rel="stylesheet" href="../layui/css/layui.css" media="all" />
+		<!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+	</head>
+
+	<body>
+
+		<form class="layui-form">
+			<div class="layui-inline">
+				<label class="layui-form-label">搜索</label>
+				<div class="layui-input-inline" id="changeupper">
+					<select id="viewDemo" name="modules" lay-verify="required" lay-search="" lay-filter="demo">
+						<option value=""></option>
+					</select>
+					<script id="demodemo" type="text/html">
+
+						<option value="">直接选择或搜索选择</option>
+						{{# layui.each(carBrandSelect, function(index, item){ }}
+						<option value="{{ item.name }}">{{ item.name }}</option>
+						{{# }); }} {{# if(carBrandSelect.length === 0){ }} 无数据 {{# } }}
+
+					</script>
+					<script id="demodemo2" type="text/html">
+
+						<dd lay-value="" class="">直接选择或搜索选择</dd>
+						{{# layui.each(carBrandSelect, function(index, item){ }}
+						<dd lay-value="{{ item.name }}" class="">{{ item.value }}</dd>
+						{{# }); }} {{# if(carBrandSelect.length === 0){ }} 无数据 {{# } }}
+
+					</script>
+				</div>
+
+			</div>
+			<input lay-submit value="测试" class="layui-btn" />
+		</form>
+		<script src="../layui/layui.js"></script>
+		<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+		<script>
+			var carBrandSelect;
+			layui.use(['form', 'jquery','laytpl'], function() {
+				var form = layui.form;
+				var laytpl = layui.laytpl;
+				var $ = layui.jquery;
+
+//	            $.getJSON("html/mps.json", "", function(data) {
+//				    　  //each循环 使用$.each方法遍历返回的数据date
+//				       console.log(data);
+//						carBrandSelect = data;
+//
+//						layui.use('laytpl', function(laytpl) {
+//							var getTpl = demodemo.innerHTML;
+//							laytpl(getTpl).render(carBrandSelect, function(html) {
+//								viewDemo.innerHTML = html;
+//								form.render();
+//							});
+//						});
+//				});
+				$('body').delegate('.layui-form-select input','keyup', function(e) {
+							var getTpl = demodemo2.innerHTML;
+							carBrandSelect = [];
+					for(var i=0;i<10;i++){
+						var num = Math.random();
+						carBrandSelect.push({"name": num, "value": num})
+					}
+					
+							laytpl(demodemo.innerHTML).render(carBrandSelect, function(html) {
+								viewDemo.innerHTML = html;
+							});
+					laytpl(getTpl).render(carBrandSelect, function(html) {
+						var dds = $(e.currentTarget).parent().siblings('dl')
+						dds.html(html);
+						console.log(html)
+						
+						 //选择
+						 
+          	var TIPS = '请选择', CLASS = 'layui-form-select', TITLE = 'layui-select-title'
+        ,NONE = 'layui-select-none', initValue = '', MOD_NAME = 'form', ELEM = '.layui-form', THIS = 'layui-this', SHOW = 'layui-show', HIDE = 'layui-hide', DISABLED = 'layui-disabled';
+          	var select = $('#viewDemo');
+          	var reElem = select.siblings('div.layui-form-select');
+          	var input = $(e.currentTarget);
+          dds.find('dd').on('click', function(){
+            var othis = $(this), value = othis.attr('lay-value');
+            var filter = select.attr('lay-filter'); //获取过滤器
+
+            if(othis.hasClass(DISABLED)) return false;
+            
+            if(othis.hasClass('layui-select-tips')){
+              input.val('');
+            } else {
+              input.val(othis.text());
+              othis.addClass(THIS);
+            }
+            
+            othis.siblings().removeClass(THIS);
+            select.val(value).removeClass('layui-form-danger')
+            layui.event.call(this, MOD_NAME, 'select('+ filter +')', {
+              elem: select[0]
+              ,value: value
+              ,othis: reElem
+            });
+
+            reElem.removeClass(CLASS+'ed ' + CLASS+'up');
+            input.blur();
+            return false;
+          });
+						
+						
+					});
+				});
+				form.on('select',function(ele){
+					console.log(ele)
+				})
+				form.on('submit',function(data){
+					console.log(JSON.stringify(data))
+				})
+			});
+		</script>
+
+	</body>
+
+</html>

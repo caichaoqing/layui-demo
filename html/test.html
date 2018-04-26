@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="../layui/css/layui.css" />
+	</head>
+	<body>
+		<div id="text"></div>
+		<div ng-app="app" ng-controller="MainCtrl">
+			<form class="layui-form" action="">
+			  
+			  <div class="layui-form-item">
+			    <label class="layui-form-label">{{model.checkbox}}</label>
+			    <div class="layui-input-block">
+			      <input lay-ignore type="checkbox" ng-disabled="model.disabled" name="checkbox" value="1" ng-model="model.checkbox" title="写作">
+			      <input lay-ignore type="checkbox" name="checkbox" value="3" ng-model="model.checkbox" title="阅读" checked>
+			      <input lay-ignore type="checkbox" name="checkbox" value="4" ng-model="model.checkbox" title="发呆">
+			    </div>
+			  </div>
+			  <div class="layui-form-item">
+			    <label class="layui-form-label">{{model.checkbox2}}</label>
+			    <div class="layui-input-block">
+			    	<div class="layui-input-inline" ng-repeat="item in model.items">
+			    		<input lay-ignore type="checkbox" name="checkbox" ng-checked="item=='3'" ng-disabled="item=='3'" value="{{item}}" ng-model="model.checkbox2" title="{{item}}">
+			    	</div>
+			      
+			    </div>
+			  </div>
+			  
+			  <div class="layui-form-item">
+			    <label class="layui-form-label">{{model.radio}}</label>
+			    <div class="layui-input-block">
+			      <input lay-ignore type="radio" ng-disabled="model.disabled" name="radio" value="1" ng-model="model.radio" title="写作">
+			      <input lay-ignore type="radio" name="radio" value="3" ng-model="model.radio" title="阅读" checked>
+			      <input lay-ignore type="radio" name="radio" value="4" ng-model="model.radio" title="发呆">
+			    </div>
+			  </div>
+			  <div class="layui-form-item">
+			    <label class="layui-form-label">{{model.radio2}}</label>
+			    <div class="layui-input-block">
+			    	<div class="layui-input-inline" ng-repeat="item in model.items">
+			    		<input lay-ignore type="radio" name="radio2" ng-checked="item=='3'" ng-disabled="item=='3'" value="{{item}}" ng-model="model.radio2" title="{{item}}">
+			    	</div>
+			      
+			    </div>
+			  </div>
+			  <!--<div class="layui-form-item">
+			    <label class="layui-form-label">开关</label>
+			    <div class="layui-input-block">
+			      <input type="checkbox" name="switch" lay-skin="switch">
+			    </div>
+			  </div>
+			  <div class="layui-form-item">
+			    <label class="layui-form-label">单选框</label>
+			    <div class="layui-input-block">
+			      <input type="radio" name="sex" value="男" title="男">
+			      <input type="radio" name="sex" value="女" title="女" checked>
+			    </div>
+			  </div>-->
+			  
+			  <div class="layui-form-item">
+			    <div class="layui-input-block">
+			      <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+			      <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			    </div>
+			  </div>
+			</form>
+		    <hello title="message"></hello>
+		</div>
+		<script type="text/javascript" src="../js/jquery.js" ></script>
+		<script src="../js/angular.1.2.js"></script>
+		<script type="text/javascript" src="../layui/layui.js" ></script>
+		<script>
+		var setValue = function(attrs, value,obj) {
+			attrs = attrs.split('.');
+			var inFn = function(keys,value,ob){
+				
+				var key = keys.shift();
+				try{
+//					if(key && !!Object.keys(ob).indexOf(key)) {
+//						ob[key] = keys.length!=0?{}:value
+//					}
+					if(key && !!Object.keys(ob).indexOf(key)) {
+						ob[key] = keys.length!=0?ob[key]?ob[key]:{}:value
+					}
+				}catch(e){
+					//TODO handle the exception
+				}
+				
+				key && inFn(keys,value,ob[key])
+				return ob;
+			}
+			
+			return inFn(attrs,value,obj);
+		}
+		var a = setValue('a.b.c.d.e',{value:1},{a:{b:{},v:3}})
+			document.getElementById('text').innerHTML = JSON.stringify(a)
+		
+		
+		angular.module('app', [])
+		.directive('input', function($timeout) {
+		    return {
+		         restrict: 'ECMA',
+		         replace: false,
+		        template: function(element, attr) {
+		        	if(attr.type || attr.type.toLowerCase()!='checkbox' ||  attr.type.toLowerCase()!='radio' )
+		        	var $tpl = '';
+		        	
+	            	if(!!Object.keys(attr).indexOf('layIgnore')>-1){
+	            		element.addClass('layui-hide');
+	            	}
+		        	switch (attr.type.toLowerCase()) {
+	                    case 'checkbox':
+	                        if ((attr.ngStyle || 'checked') === 'checked') {
+	                            var styleChecked = 'layui-form-checked';
+	                            var laySkin = 'lay-skin="'+(attr.laySkin || 'primary')+'"';
+	                            $tpl = '<div class="layui-unselect layui-form-checkbox" '+laySkin+'><span>' + (element.attr('title') || '') + '</span><i class="layui-icon">&#xe605;</i></div>';//&#xe618;
+	                        } else {
+	                            var styleChecked = 'layui-form-onswitch';
+	                            $tpl = '<div class="layui-unselect layui-form-switch"><i></i></div>';
+	                        }
+	                        
+	                        break;
+	                    case 'radio':
+	                        var styleChecked = 'layui-form-radioed';
+	                        $tpl = '<div class="layui-unselect layui-form-radio"><i class="layui-anim layui-icon">&#xe63f;</i><div>' + (element.attr('title') || '') + '</div></div>';
+
+	                        break;
+	                }
+		        	if(element.next().hasClass('layui-unselect')){
+		        		element.next().remove();
+		        	}else{
+		        		element.after($tpl);
+		        	}
+		            return '';
+		        },
+		        compile: function(element, attrs) {
+		            return function (scope, element, attr){
+		            	
+			        	switch (attr.type.toLowerCase()) {
+		                    case 'checkbox':
+		                    	$timeout(function(){
+					            	scope.$watch(attr.ngModel,function(newVal){
+					            		var scopeVal = scope.$eval(attr.ngModel)||[];
+					            		var valIndex = scopeVal.findIndex(function(val){
+					            			return val == attr.value;
+					            		})
+					            		if(valIndex > -1){
+					            			element.next().addClass('layui-form-checked')
+					            			element[0].checked = true;
+					            		}else{
+					            			element.next().removeClass('layui-form-checked')
+					            			element[0].checked = false;
+					            		}	
+					            	});
+					            	scope.$watch(attr.ngDisabled,function(newVal){
+					            		if(element[0].disabled){
+			            					element.next().addClass('layui-disabled')
+				            			}else{
+				            				element.next().removeClass('layui-disabled')
+				            			}
+					            	});
+					            	
+					            	element.next().on('click',function(){
+					            		if(element[0].disabled || element[0].readOnly){
+					            			return;
+					            		}
+					            		var scopeVal = scope.$eval(attr.ngModel)||[];
+					            		var valIndex = scopeVal.findIndex(function(val){
+					            			return val == attr.value;
+					            		})
+					            		if(valIndex > -1){
+					            			element.next().removeClass('layui-form-checked')
+					            			element[0].checked = false;
+					            			scopeVal.splice(valIndex,1);
+					            		}else{
+					            			element.next().addClass('layui-form-checked')
+					            			element[0].checked = true;
+					            			scopeVal.push(attr.value+'')
+					            		}	
+					            		scope.$apply(function(){
+					            			setValue(attr.ngModel,scopeVal,scope)
+					            		});
+					            	});
+				            	});
+		                        break;
+		                    case 'radio':
+			                    $timeout(function(){
+					            	scope.$watch(attr.ngModel,function(newVal){
+					            		var scopeVal = scope.$eval(attr.ngModel)||'';
+					            		if(scopeVal == attr.value){
+					            			element.next().addClass('layui-form-radioed').find('.layui-icon').addClass('layui-anim-scaleSpring').html('&#xe643;');
+					            			element[0].checked = true;
+					            		}else{
+					            			element.next().removeClass('layui-form-radioed').find('.layui-icon').removeClass('layui-anim-scaleSpring').html('&#xe63f;');
+					            			element[0].checked = false;
+					            		}	
+					            	});
+					            	scope.$watch(attr.ngDisabled,function(newVal){
+					            		if(element[0].disabled){
+			            					element.next().addClass('layui-disabled')
+				            			}else{
+				            				element.next().removeClass('layui-disabled')
+				            			}
+					            	});
+					            	
+					            	element.next().on('click',function(){
+					            		if(element[0].disabled || element[0].readOnly){
+					            			return;
+					            		}
+					            		var scopeVal = scope.$eval(attr.ngModel)||'';
+					            		angular.element('input[ng-model="'+attr.ngModel+'"]').each(function(index,item){
+					            			angular.element(item).next().removeClass('layui-form-radioed').find('.layui-icon').removeClass('layui-anim-scaleSpring').html('&#xe63f;');
+					            			item.checked = false;
+					            		});
+					            		element.next().addClass('layui-form-radioed').find('.layui-icon').addClass('layui-anim-scaleSpring').html('&#xe643;');
+				            			element[0].checked = true;
+					            		
+					            		scope.$apply(function(){
+					            			setValue(attr.ngModel,attr.value||'',scope)
+					            		});
+					            	});
+				            	});
+		                        break;
+		                }
+		            	
+		            }
+		        }
+		    };
+		}).controller('MainCtrl', function($scope,$timeout) {
+			layui.use(['element','form'],function(){
+				var element = layui.element,
+					form = layui.form;
+			});
+		    $scope.model = {
+		    	items:['1','3','4'],
+		    	checkbox:['4'],
+		    	checkbox2:['4'],
+		    	radio:'4',
+		    	radio2:'3'
+		    };
+		    $timeout(function(){
+		    	$scope.model.checkbox = ['1','3'],
+		    	$scope.model.disabled = true;
+		    },5000);
+		    $timeout(function(){
+		    	$scope.model.checkbox = ['4','3'],
+		    	$scope.model.checkbox2=['3','4'],
+		    	$scope.model.disabled = false;
+		    },10000);
+		});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        div{
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            margin: 1px 1px;
+            background-color: gray;
+            border: 1px dashed #cccccc;
+        }
+        body{
+            position: relative;
+            font-family: "微软雅黑";
+ 
+ 
+        }
+        header,
+        section
+        {
+            position: relative;
+            margin: 0 auto;
+            width: 998px;
+        }
+ 
+    </style>
+</head>
+<body>
+    <header>
+        <h1>A*寻路demo演示</h1>
+        <table>
+            <tr>
+                <td>输入地图列数(最大15列)：</td>
+                <td><input id="rowInput" type="text"/></td>
+            </tr>
+            <tr>
+                <td>请输入地图行数(最大15行)：</td>
+                <td><input id="colInput" type="text"></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input id="createMapBtn" type="button" value="点击生成地图"/></td>
+            </tr>
+            <tr>
+                <td id="prompt">test...</td>
+                <td><input id="findPoint" type="button" value="开始寻路" style="display: none"/></td>
+            </tr>
+ 
+ 
+        </table>
+ 
+ 
+    </header>
+ 
+    <section id="main"></section>
+ 
+    <script>
+       function Point(){
+           this.x=0;
+           this.y=0;
+           this.G=0;//G值 开始点 到当前点的移动量
+           this.H=0;//H值　当前点移动目的地的移动量估算值
+           this.father=null;
+       };
+       Point.prototype={
+           Console:function(){
+               console.log("x:"+this.x+" and y:"+this.y);
+           },
+           Init:function(x,y,father){
+               this.x=x;
+               this.y=y;
+               this.father=father;
+           }
+       };
+       function AStar(){
+           //地图存放二维数组
+           this.map=[];
+           //行数
+           this.rowCount=0;
+           //列数
+           this.colCount=0;
+           //出发点
+           this.startPoint=new Point();
+           //终点
+           this.endPoint=new Point();
+           //存放Opint类的open数组
+           this.openList=[];
+           //存在Opint类的close数组
+           this.closeList=[];
+       };
+       AStar.prototype={
+           //是否为障碍物
+           IsBar:function(x,y){
+               if(this.map[x][y]==3){
+                   console.log("bar...");
+                   return true;
+               }
+               else{
+                   console.log("no bar...")
+                   return false;
+               }
+           },
+           //当前坐标是否在OpenList
+           IsInOpenList:function(x,y){
+                for(var i=0;i<this.openList.length;i++){
+                    if(this.openList[i].x==x&&this.openList[i].y==y){
+                        return true;
+                    }
+ 
+                }
+               return false;
+           },
+           //当前坐标是否在CloseList
+           IsInCloseList:function(x,y){
+               for(var i=0;i<this.closeList.length;i++){
+                   if(this.closeList[i].x==x&&this.closeList[i].y==y){
+                       return true;
+                   }
+ 
+               }
+               return false;
+           },
+           //计算G值;(p是Point类)
+           GetG:function(p){
+               if(p.father==null){
+                   return 0;
+               }
+               return p.father.G+1;
+           },
+           //计算H值
+           GetH:function(p,pb){
+               return Math.abs(p.x-pb.x)+Math.abs(p.y-pb.y);
+           },
+           //添加当前点的上下左右相邻的方格到Open列表中
+           AddNeiToOpenList:function(curPoint){
+               for(var x=curPoint.x-1;x<=curPoint.x+1;x++){
+                    for(var y=curPoint.y-1;y<=curPoint.y+1;y++){
+                        //排除自身以及超出下标的点
+                        if((x>=0&&x<this.colCount&&y>=0&&y<this.rowCount)&&!(curPoint.x==x&&curPoint.y==y)){
+                            //排除斜对角
+                            if(Math.abs(x-curPoint.x)+Math.abs(y-curPoint.y)==1){
+                                //不是障碍物且不在关闭列表中
+                                if(this.IsBar(x,y)==false&&this.IsInCloseList(x,y)==false){
+                                    //不存在Open列表
+                                    if(this.IsInOpenList(x,y)==false){
+                                        var point=new Point();
+                                        point.x=x;
+                                        point.y=y;
+                                        point.father=curPoint;
+                                        point.G=this.GetG(point);
+                                        point.H=this.GetH(point,this.endPoint);
+                                        this.openList.push(point);
+                                    }
+                                }
+                            }
+                        }
+                    }
+               }
+           },
+           //在openlist集合中获取G+H为最小的Point点
+           GetMinFFromOpenList:function(){
+               var minPoint=null;
+               var index=0;
+               for(var i=0;i<this.openList.length;i++){
+                   if(minPoint==null||minPoint.G+minPoint.H>=this.openList[i].G+this.openList[i].H){
+                       minPoint=this.openList[i];
+                       index=i;
+                   }
+               }
+               return{
+                   minPoint:minPoint,
+                   index:index
+               }
+           },
+ 
+           GetPointFromOpenList:function(x,y){
+               for(var i=0;i<this.openList.length;i++){
+                   if(this.openList[i].x==x&&this.openList[i].y==y){
+                       return this.openList[i];
+                   }
+               }
+               return null;
+ 
+           },
+           //开始寻找节点
+           FindPoint:function(){
+               console.log(this);
+               this.openList.push(this.startPoint);
+               while(this.IsInOpenList(this.endPoint.x,this.endPoint.y)==false||this.openList.length==0){
+                   var curPoint=this.GetMinFFromOpenList().minPoint;
+                   console.log("curPoint:"+curPoint);
+                   var index=this.GetMinFFromOpenList().index;
+                   if(curPoint==null){
+                       console.log("没有路");
+                       return;
+                   }
+                   this.openList.splice(index,1);
+                   this.closeList.push(curPoint);
+                   this.AddNeiToOpenList(curPoint);
+               }
+               var p=this.GetPointFromOpenList(this.endPoint.x,this.endPoint.y);
+               console.log(p+".....");
+               while(p.father!=null){
+                   p= p.father;
+                   console.log("father..");
+                   this.map[p.x][p.y]=4;
+               }
+               //把终结点也设置成4
+               this.map[this.endPoint.x][this.endPoint.y]=4;
+           },
+           PrintMap:function(){
+ 
+           }
+ 
+ 
+       };
+       //地图类    map数组保存数字标识 :0 默认　1 开始点　2 结束点　3 障碍物
+       function Map(id){
+           this.map=[];
+           this.container=document.getElementById(id);
+           this.colCount=0;
+           this.rowCount=0;
+       }
+       Map.prototype={
+           init:function(colCount,rowCount){
+               this.colCount=colCount;
+               this.rowCount=rowCount;
+               for(var colIndex=0;colIndex<this.colCount;colIndex++){
+                   this.map.push([]);
+                   for(var rowIndex=0;rowIndex<this.rowCount;rowIndex++){
+                       this.map[colIndex].push(0);
+                   }
+               }
+           },
+           drawMap:function(callback){
+               for(var colIndex=0;colIndex<this.map.length;colIndex++){
+                   for(var rowIndex=0;rowIndex<this.map[colIndex].length;rowIndex++){
+                       var div=document.createElement("div");
+                       div.style.top=colIndex*50+5+"px";
+                       div.style.left=rowIndex*50+5+"px";
+                       div.setAttribute("colIndex",colIndex);
+                       div.setAttribute("rowIndex",rowIndex);
+                       div.onclick=callback;
+                       this.container.appendChild(div);
+                   }
+ 
+               }
+ 
+           },
+           drawPoints:function(){
+               var divs=this.container.children;
+               console.log(divs.length);
+               console.log(this.map);
+               var timer=1000;
+               for(var i=0;i<divs.length;i++){
+                   var colIndex=divs[i].getAttribute("colIndex");
+                   var rowIndex=divs[i].getAttribute("rowIndex");
+                   if(this.map[colIndex][rowIndex]==4){
+                       divs[i].style.backgroundColor="red";
+                   }
+               }
+           },
+           getPoint:function(colIndex,rowIndex){
+               return this.map[colIndex][rowIndex];
+           },
+           setStartPoint:function(colIndex,rowIndex){
+               this.map[colIndex][rowIndex]=1;
+           },
+           setEndPoint:function(colIndex,rowIndex){
+               this.map[colIndex][rowIndex]=2;
+           },
+           setBarPoint:function(colIndex,rowIndex){
+               this.map[colIndex][rowIndex]=3;
+           },
+           clearMap:function(){
+               this.map.splice(0,this.map.length);
+               this.container.innerHTML="";
+           }
+ 
+       }
+ 
+       var rowInput=document.querySelector("#rowInput");
+       var colInput=document.querySelector("#colInput");
+       var createMapBtn=document.querySelector("#createMapBtn");
+       var prompt=document.querySelector("#prompt");
+       var findPoint=document.querySelector("#findPoint");
+       var curMap=new Map("main");
+       var state=0;//状态标识　0选择开始节点标识　1选择结束节点标识 2选择障碍物标识
+       var aStar=new AStar();//寻路类
+ 
+       createMapBtn.onclick=function(){
+ 
+           curMap.clearMap();
+           curMap.init(colInput.value,rowInput.value);
+           aStar.map=curMap.map;
+           aStar.colCount=colInput.value;
+           aStar.rowCount=rowInput.value;
+           curMap.drawMap(function(){
+                var colIndex=this.getAttribute("colIndex");
+                var rowIndex=this.getAttribute("rowIndex");
+                if(curMap.getPoint(colIndex,rowIndex)!=0){
+                    return;
+                }
+                if(state==0){
+                    this.style.backgroundColor="blue";
+                    curMap.setStartPoint(colIndex,rowIndex);
+                    aStar.startPoint.x=colIndex;
+                    aStar.startPoint.y=rowIndex;
+                    state=1;
+                    prompt.innerHTML="请点击格子，设置终点";
+ 
+                }else if(state==1){
+                    this.style.backgroundColor="yellow";
+                    curMap.setEndPoint(colIndex,rowIndex);
+                    aStar.endPoint.x=colIndex;
+                    aStar.endPoint.y=rowIndex;
+                    prompt.innerHTML="请点击格子，设置障碍物";
+                    console.log(findPoint);
+                    findPoint.style.display="block";
+                    state=2;
+                }else if(state==2){
+                    curMap.setBarPoint(colIndex,rowIndex);
+                    this.style.backgroundColor="black";
+                }
+           });
+           prompt.innerHTML="请点击格子，设置起始点";
+       }
+       findPoint.onclick=function(){
+           console.log(aStar.map);
+           aStar.FindPoint();
+           curMap.drawPoints();
+       }
+ 
+    </script>
+ 
+</body>
+</html>

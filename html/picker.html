@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PICKER</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" />
+</head>
+
+<body>
+    <div style="margin: 50px auto; width:980px;">
+        <fieldset class="layui-elem-field">
+            <legend>这是带默认值的 -- 区/县</legend>
+            <div class="layui-field-box">
+                <div id="p1"></div>
+            </div>
+        </fieldset>
+        <fieldset class="layui-elem-field">
+            <legend>这是带默认值的 -- 市</legend>
+            <div class="layui-field-box">
+                <div id="p3"></div>
+            </div>
+        </fieldset>
+        <fieldset class="layui-elem-field">
+            <legend>这是带默认值的 -- 省</legend>
+            <div class="layui-field-box">
+                <div id="p4"></div>
+            </div>
+        </fieldset>
+        <fieldset class="layui-elem-field">
+            <legend>这是不带默认值的</legend>
+            <div class="layui-field-box">
+                <div id="p2"></div>
+            </div>
+        </fieldset>
+    </div>
+    <footer style="text-align: center;">
+        <p>2017 © <a href="m.zhengjinfan.cn/">m.zhengjinfan.cn/</a> MIT license</p>
+    </footer>
+    <script type="text/javascript" src="../layui/layui.js"></script>
+    <script type="text/javascript" src="area_data.js"></script>
+    <script>
+    	layui.config({
+		  base: '/layui/layui/lay/extend/' //假设这是你存放拓展模块的根目录
+		});
+        layui.use(['picker'], function() {
+            var picker = layui.picker;
+            //demo1
+            var p1 = new picker();
+            p1.set({
+                elem: '#p1',
+                data: Areas,
+                codeConfig: {
+                    code: 440104,
+                    type: 3
+                }
+            }).render();
+            var p3 = new picker();
+            p3.set({
+                elem: '#p3',
+                data: Areas,
+                codeConfig: {
+                    code: 110200,
+                    type: 2
+                }
+            }).render();
+            var p4 = new picker();
+            p4.set({
+                elem: '#p4',
+                data: Areas,
+                codeConfig: {
+                    code: 410000,
+                    type: 1
+                },
+                canSearch: true
+            }).render();
+            //demo2
+            var p2 = new picker();
+            p2.set({
+                elem: '#p2',
+                data: Areas,
+                canSearch: true
+            }).render();
+        });
+    </script>
+</body>
+
+</html>
